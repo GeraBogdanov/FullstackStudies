@@ -14,38 +14,40 @@ function Part(prop) {
 }
 
 function Content(prop) {
-  console.log(prop.content);
-  return prop.content.map((part, i) => <Part key={i} part={part} />);
+  console.log(prop.parts);
+  return prop.parts.map((part, i) => <Part key={i} part={part} />);
 }
 
 function Total(prop) {
-  console.log(prop.total);
-  const total = prop.total.reduce((a, b) => a + b.exercises, 0);
+  console.log(prop.parts);
+  const total = prop.parts.reduce((a, b) => a + b.exercises, 0);
   return <p>Number of exercises {total}</p>;
 }
 
 function App() {
-  const course = "Half Stack application development";
-  const parts = [
-    {
-      name: "Fundamentals of React",
-      exercises: 10,
-    },
-    {
-      name: "Using props to pamultilinemultiliness data",
-      exercises: 7,
-    },
-    {
-      name: "State of a component",
-      exercises: 14,
-    },
-  ];
+  const course = {
+    name: "Half Stack application development",
+    parts: [
+      {
+        name: "Fundamentals of React",
+        exercises: 10,
+      },
+      {
+        name: "Using props to pamultilinemultiliness data",
+        exercises: 7,
+      },
+      {
+        name: "State of a component",
+        exercises: 14,
+      },
+    ],
+  };
 
   return (
     <div>
-      <Header course={course} />
-      <Content content={parts} />
-      <Total total={parts} />
+      <Header course={course.name} />
+      <Content parts={course.parts} />
+      <Total parts={course.parts} />
     </div>
   );
 }
