@@ -1,13 +1,10 @@
 import { useState } from "react";
 
-const Header = (props) => <h1>{props.text}</h1>
-const Anecdote = (props) => <div>{props.text}</div>
-const Vote = (props) => <div>has {props.text} votes</div>
-const Button = (props) => (
-  <div>
-    <button onClick={props.handleClick}>text</button>
-  </div>
-);
+const Header = (props) => <h1>{props.text}</h1>;
+const Anecdote = (props) => <div>{props.text}</div>;
+const Vote = (props) => <div>has {props.text} votes</div>;
+const Votes = (props) => <div>{props.text}</div>
+const Button = (props) => <button onClick={props.handleClick}>{props.text}</button>;
 const App = () => {
   const getRandomInt = (max) => Math.floor(Math.random() * max);
   const [selected, setSelected] = useState(0);
@@ -25,7 +22,7 @@ const App = () => {
   ];
 
   const vote = (props) => {
-    const copy = [ ...points ];
+    const copy = [...points];
     copy[props] += 1;
     setPoints(copy);
   };
@@ -33,31 +30,35 @@ const App = () => {
   const handleClick = () => {
     console.log(`handleClick ${selected}`);
     const random = getRandomInt(8);
-    setSelected(random); 
-    vote(random);
-  }
+    setSelected(random);
+  };
+  const voteClick = () => {
+    vote(selected);
+    handleClick();
+  };
+
   const mostVotes = () => {
     let max = 0;
-    for(let i = 0; i<points.length; i++){
-      if(points[i] > points[max]){
+    for (let i = 0; i < points.length; i++) {
+      if (points[i] > points[max]) {
         max = i;
       }
     }
     return max;
-  }
+  };
   console.log(points);
   console.log(mostVotes());
 
   return (
     <div>
-      <Header text="Anecdote of the day"/>
-      <Anecdote text={anecdotes[selected]}/>
-      <Button handleClick={handleClick} />
-      {points};
-      <Header text="Anecdote with most votes"/>
-      <Anecdote text={anecdotes[mostVotes()]}/>
+      <Header text="Anecdote of the day" />
+      <Anecdote text={anecdotes[selected]} />
+      <Button handleClick={handleClick} text="next"/>
+      <Button handleClick={voteClick} text="vote"/>
+      <Votes text={points}/>
+      <Header text="Anecdote with most votes" />
+      <Anecdote text={anecdotes[mostVotes()]} />
       <Vote text={points[mostVotes()]} />
-
     </div>
   );
 };
