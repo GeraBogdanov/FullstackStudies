@@ -1,37 +1,9 @@
 import { useState, useEffect } from "react";
 import Persons from "./components/Persons.jsx";
-import axios from "axios";
-
-function Filter({ newSearch, handleNewSearch }) {
-  return (
-    <div>
-      filter show with <input value={newSearch} onChange={handleNewSearch} />
-    </div>
-  );
-}
-
-function PersonForm({
-  addPerson,
-  newName,
-  newPhone,
-  handleNameChange,
-  handlePhoneChange,
-}) {
-  return (
-    <form onSubmit={addPerson}>
-      <div>
-        name: <input value={newName} onChange={handleNameChange} />
-      </div>
-      <div>
-        phone: <input value={newPhone} onChange={handlePhoneChange} />
-      </div>
-      <div>debug: {newName}</div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  );
-}
+import PersonForm from "./components/PersonForm.jsx";
+import Filter from "./components/Filter.jsx";
+import noteService from "./services/persons.js";
+import Notification from "./components/Notification.jsx";
 
 function App() {
   const [persons, setPersons] = useState([]);
@@ -39,47 +11,98 @@ function App() {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newSearch, setNewSearch] = useState("");
-  const [newId, setNewId] = useState(5);
+  const [message, setMessage] = useState(null);
 
-  const hook = () => {
-    console.log("effect");
-    axios
-    .get("http://localhost:3001/persons")
-    .then(response => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+  useEffect(() => {
+    noteService.getAll().then((initialState) => {
+      setPersons(initialState);
     });
-  };
-
-  useEffect(hook, []);
+  }, []);
   console.log("render", persons.length, "persons");
 
-  function checkNameForExistance(props) {
-    console.log(`checkNameForExistance ${props.name}`);
-    console.log(persons);
-    return persons.find((person) => person.name === props);
+  function deletePerson(itemId) {
+    console.log(`deletePerson ${itemId}`);
+    noteService
+      .remove(itemId)
+      .then(() => {
+        setPersons(persons.filter((person) => person.id !== itemId));
+      })
+      .catch((error) => console.log(error));
+  }
+
+  function findPersonInList(newName) {
+    return persons.find((person) => person.name === newName);
+  }
+
+  function comparePhone(num1, num2) {
+    return num1 === num2;
+  }
+
+  function clearInputs() {
+    setNewName("");
+    setNewPhone("");
+  }
+  function changeNumber(newPhone, id) {
+    noteService
+      .change(newPhone, id)
+      .then(() => {
+        setPersons(
+          persons.map((person) => {
+            if (person.id === id) {
+              person.number = newPhone;
+              return person;
+            }
+            return person;
+          })
+        );
+        console.log(persons);
+        clearInputs();
+      })
+      .catch((error) => {
+        setMessage({
+          message: `Information of ${
+            persons.find((person) => person.id === id).name
+          } has already been removed from server`,
+          type: "error",
+        });
+        setPersons(persons.filter((person) => person.id !== id));
+        setTimeout(() => setMessage(null), 5000);
+      });
   }
 
   function addPerson(event) {
     event.preventDefault();
+
     console.log("button clicked", event.target);
     console.log(`name: ${newName} phone:${newPhone}`);
 
     const personObject = {
       name: newName,
       number: newPhone,
-      id: newId,
     };
+    const person = findPersonInList(newName);
 
-    if (checkNameForExistance(newName)) {
-      alert(`${newName} is already added to phonebook`);
+    if (person) {
+      if (comparePhone(person.number, newPhone)) {
+        alert(`${newName} is already added to phonebook`);
+      } else {
+        if (
+          window.confirm(
+            `${newName} is already added to phonebook, preplace the old number with a new one?`
+          )
+        )
+          changeNumber(newPhone, person.id);
+      }
     } else {
-      console.log(checkNameForExistance(newName));
-      setNewId(newId + 1);
-      setPersons(persons.concat(personObject));
-
-      setNewName("");
-      setNewPhone("");
+      noteService.create(personObject).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson));
+        setMessage({
+          message: `Added ${returnedPerson.name}`,
+          type: "success",
+        });
+        setTimeout(() => setMessage(null), 5000);
+        clearInputs();
+      });
     }
   }
 
@@ -99,6 +122,7 @@ function App() {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter newSearch={newSearch} handleNewSearch={handleNewSearch} />
       <h3>Add a new</h3>
       <PersonForm
@@ -110,7 +134,11 @@ function App() {
       />
       <h3>Numbers</h3>
       <ul>
-        <Persons persons={persons} keyword={newSearch} />
+        <Persons
+          persons={persons}
+          keyword={newSearch}
+          deletePerson={deletePerson}
+        />
       </ul>
     </div>
   );
