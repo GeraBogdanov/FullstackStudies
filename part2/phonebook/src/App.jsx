@@ -9,7 +9,7 @@ function App() {
   const [persons, setPersons] = useState([]);
 
   const [newName, setNewName] = useState("");
-  const [newPhone, setNewPhone] = useState("");
+  const [newNumber, setNewPhone] = useState("");
   const [newSearch, setNewSearch] = useState("");
   const [message, setMessage] = useState(null);
 
@@ -27,7 +27,16 @@ function App() {
       .then(() => {
         setPersons(persons.filter((person) => person.id !== itemId));
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        setMessage({
+          message: `Information of ${persons.find((person) => person.id === itemId).name
+            } has already been removed from server`,
+          type: "error",
+        });
+        setPersons(persons.filter((person) => person.id !== itemId));
+        setTimeout(() => setMessage(null), 5000);
+      });
   }
 
   function findPersonInList(newName) {
@@ -42,14 +51,16 @@ function App() {
     setNewName("");
     setNewPhone("");
   }
-  function changeNumber(newPhone, id) {
+
+  function changeNumber(newNumber, id) {
     noteService
-      .change(newPhone, id)
+      .change(newNumber, id)
       .then(() => {
         setPersons(
+          // create new persons array and change number if the id is the same
           persons.map((person) => {
             if (person.id === id) {
-              person.number = newPhone;
+              person.number = newNumber;
               return person;
             }
             return person;
@@ -59,10 +70,10 @@ function App() {
         clearInputs();
       })
       .catch((error) => {
+        console.log(error);
         setMessage({
-          message: `Information of ${
-            persons.find((person) => person.id === id).name
-          } has already been removed from server`,
+          message: `Information of ${persons.find((person) => person.id === id).name
+            } has already been removed from server`,
           type: "error",
         });
         setPersons(persons.filter((person) => person.id !== id));
@@ -74,16 +85,16 @@ function App() {
     event.preventDefault();
 
     console.log("button clicked", event.target);
-    console.log(`name: ${newName} phone:${newPhone}`);
+    console.log(`name: ${newName} phone:${newNumber}`);
 
     const personObject = {
       name: newName,
-      number: newPhone,
+      number: newNumber,
     };
     const person = findPersonInList(newName);
 
     if (person) {
-      if (comparePhone(person.number, newPhone)) {
+      if (comparePhone(person.number, newNumber)) {
         alert(`${newName} is already added to phonebook`);
       } else {
         if (
@@ -91,7 +102,7 @@ function App() {
             `${newName} is already added to phonebook, preplace the old number with a new one?`
           )
         )
-          changeNumber(newPhone, person.id);
+          changeNumber(newNumber, person.id);
       }
     } else {
       noteService.create(personObject).then((returnedPerson) => {
@@ -110,10 +121,12 @@ function App() {
     console.log(event.target.value);
     setNewName(event.target.value);
   }
+
   function handlePhoneChange(event) {
     console.log(event.target.value);
     setNewPhone(event.target.value);
   }
+
   function handleNewSearch(event) {
     console.log(event.target.value);
     setNewSearch(event.target.value);
@@ -128,7 +141,7 @@ function App() {
       <PersonForm
         addPerson={addPerson}
         newName={newName}
-        newPhone={newPhone}
+        newPhone={newNumber}
         handleNameChange={handleNameChange}
         handlePhoneChange={handlePhoneChange}
       />

@@ -1,15 +1,17 @@
 function Name({ name }) {
   return name;
 }
+
 function PhoneNumber({ number }) {
   return number;
 }
+
 function Person({ person, deletePerson }) {
   return (
     <div>
       <li>
         <Name name={person.name} /> <PhoneNumber number={person.number} />
-        <button onClick={() => {if (window.confirm(`Delete ${person.name}`)) deletePerson(person.id)}}>delete</button>
+        <button onClick={() => { if (window.confirm(`Delete ${person.name}`)) deletePerson(person.id) }}>delete</button>
       </li>
     </div>
   );
@@ -25,7 +27,7 @@ function Persons({ keyword, persons, deletePerson }) {
     if (person.name.search(keyword) === -1) {
       return;
     } else {
-      return <Person key={person.id} person={person} deletePerson={deletePerson}/>;
+      return <Person key={person.id} person={person} deletePerson={deletePerson} />;
     }
   });
 }

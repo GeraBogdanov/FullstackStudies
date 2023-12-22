@@ -2,7 +2,7 @@ function notification({ message }) {
   if (message === null) return null;
 
   const { message: msg, type: typ } = message;
-  console.log(msg  +  typ);
+  console.log(`Module: notification;  Message: ${msg}; Type: ${typ}`);
 
   if (typ === "error") {
     return <div className="error">{msg}</div>;
