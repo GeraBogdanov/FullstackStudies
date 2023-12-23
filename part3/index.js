@@ -68,6 +68,11 @@ app.post("/api/persons", (request, response) => {
       error: "content missing",
     });
   }
+  if(phonebook.find(person => person.name === body.name)) {
+    return response.status(400).json({
+      error: "name must be unique",
+    })
+  }
 
   const phone = {
     name: body.name,
